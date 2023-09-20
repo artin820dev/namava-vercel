@@ -14,7 +14,7 @@ const Main = () => {
 
   useEffect(() => {
     setMovie(movies[Math.floor(Math.random() * 10)]);
-    const intervalId = setInterval(intervalRand, 3500);
+    const intervalId = setInterval(intervalRand, 20000);
 
     return () => {
       clearInterval(intervalId);
