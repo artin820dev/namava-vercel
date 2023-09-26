@@ -43,6 +43,7 @@ const Login = () => {
             placeholder="ایمیل"
             className="font-thin text-sm  bg-[#ffffff33] rounded h-[48px] my-6 px-4 focus:outline-none"
             type="email"
+            autoFocus
             required
             onChange={(e) => setEmail(e.target.value)}
           />

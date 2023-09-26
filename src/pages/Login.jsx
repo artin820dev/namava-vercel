@@ -39,6 +39,7 @@ const Login = () => {
           {error && <p className="p-3 bg-red-600 my-3 rounded">{error}</p>}
           <h3 className="font-bold text-xl sm:mb-8">ورود</h3>
           <input
+            autoFocus
             placeholder="ایمیل"
             className="font-thin text-sm  bg-[#ffffff33] rounded h-[48px] my-6 px-4 focus:outline-none"
             type="email"

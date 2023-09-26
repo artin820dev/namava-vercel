@@ -1,17 +1,74 @@
 import React, { useEffect, useState } from "react";
 import { SiImdb } from "react-icons/si";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
-import { AiOutlineClose } from "react-icons/ai";
+import { BsPlayCircle, BsStopCircle } from "react-icons/bs";
 import { UserAuth } from "../context/AuthContext";
 import { db } from "../firebase";
 import { arrayUnion, doc, onSnapshot, updateDoc } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const Movie = ({ movie }) => {
+const Movie = ({ movie, setMainTrailer, setMainKey, mainKey, loc }) => {
   const [like, setLike] = useState(false);
   const [likedmovie, setLikedmovie] = useState();
+  const [youtubekey, setYoutubekey] = useState();
+  const [trailer, setTrailer] = useState(false);
+  const [direction, setDirection] = useState(false);
+
+  // you should using use effect for seting state
+
   const { user } = UserAuth();
   const navigate = useNavigate();
+
+  const stopHandler = () => {
+    setTrailer(false);
+    setMainTrailer(false);
+  };
+
+  const playHandler = () => {
+    if (youtubekey === undefined) {
+      let randomKey = Math.random() * 10000;
+
+      setMainKey(randomKey);
+      setMainTrailer(true);
+
+      setTimeout(() => {
+        setTrailer(true);
+      }, 30);
+      return;
+    }
+    setMainKey(youtubekey);
+    setMainTrailer(true);
+
+    setTimeout(() => {
+      setTrailer(true);
+    }, 30);
+  };
+
+  useEffect(() => {
+    console.log("bia");
+    setTrailer(false);
+  }, [mainKey]);
+
+  useEffect(() => {
+    if (loc.pathname === "/series") {
+      setDirection("tv");
+    } else {
+      setDirection("movie");
+    }
+  }, [loc]);
+
+  useEffect(() => {
+    if (direction) {
+      axios
+        .get(
+          `https://api.themoviedb.org/3/${direction}/${movie?.id}/videos?api_key=4d78205350df3165c837243e12636438`
+        )
+        .then((res) => {
+          setYoutubekey(res.data.results[0]?.key);
+        });
+    }
+  }, [direction, movie]);
 
   useEffect(() => {
     onSnapshot(doc(db, "users", `${user?.email}`), (doc) => {
@@ -60,8 +117,9 @@ const Movie = ({ movie }) => {
 
   return (
     <>
-      <div className="w-[117px] h-[230px] sm:w-[140px]  sm:h-[295px] md:w-[200px] md:h-[360px] rounded inline-block mr-3 relative cursor-pointer group  ">
-        <div className="absolute bg-opacity-30 bg-black w-full h-[170px]  "></div>
+      <div className="w-[117px] h-[230px] sm:w-[140px]  sm:h-[295px] md:w-[200px] md:h-[360px] rounded inline-block mr-3 relative  group  ">
+        <div className="absolute bg-opacity-30 bg-black w-full  h-[170px] sm:h-[230px] md:h-[300px] "></div>
+
         <img
           className="w-full h-[170px] sm:h-[230px] md:h-[300px]  object-cover rounded absolute"
           src={`https://image.tmdb.org/t/p/original${movie?.backdrop_path}`}
@@ -75,7 +133,7 @@ const Movie = ({ movie }) => {
         </div>
 
         <div className="absolute top-0 right-0 opacity-0 hover:opacity-100 z-10 rounded  bg-opacity-60 bg-black w-full md:h-[300px] h-[170px] sm:h-[230px] ">
-          <div className="absolute mr-3 top-20 sm:top-32 md:top-48 z-10">
+          <div className="absolute mr-3 bottom-0 sm:bottom-1  md:bottom-6 z-10">
             <div className="mb-2">
               <p>released {releaseYear} </p>
             </div>
@@ -86,12 +144,31 @@ const Movie = ({ movie }) => {
           </div>
           <p className="absolute top-2 left-0" onClick={likeHandler}>
             {like ? (
-              <FaHeart className="mb-1 ml-2 text-gray-300 text-base md:text-xl" />
+              <FaHeart className="mb-1 ml-2 cursor-pointer text-gray-300 text-base md:text-xl" />
             ) : (
-              <FaRegHeart className="mb-1 ml-2 text-gray-300 text-base md:text-xl" />
+              <FaRegHeart className="mb-1 ml-2 cursor-pointer text-gray-300 text-base md:text-xl" />
+            )}
+          </p>
+
+          <p className="absolute top-[4rem] left-11 sm:top-[5rem] sm:left-[3.50rem] md:top-[7rem] md:left-[5rem] ">
+            {trailer ? (
+              <BsStopCircle
+                className=" text-gray-300 cursor-pointer text-4xl md:text-5xl"
+                onClick={stopHandler}
+              />
+            ) : (
+              <BsPlayCircle
+                className=" text-gray-300 cursor-pointer text-4xl md:text-5xl"
+                onClick={playHandler}
+              />
             )}
           </p>
         </div>
+        {trailer && (
+          <div className="border-b border-gray-300 absolute inline-block bottom-0 z-[1000] w-full">
+            <p className="hidden">some</p>
+          </div>
+        )}
       </div>
     </>
   );
